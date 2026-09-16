@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Herramientas de desarrollo
+.claude/
+.devcontainer/
+.vscode/
+.git/
+.gitignore
+
+# Para una imagen ligera, descomenta la línea siguiente y monta la carpeta al
+# arrancar: -v "${PWD}/data:/app/data"
+# data/

@@ -1,0 +1,16 @@
+# Los cuatro .parquet pesan 30-34 MB: por debajo del límite de 100 MB por archivo
+# de GitHub, así que NO se usa Git LFS (gastaría la cuota de 1 GB/mes de ancho de
+# banda en cada run del workflow sin aportar nada: la acción hub-sync excluye
+# .gitattributes y el CLI de Hugging Face ya sube los archivos grandes por su cuenta).
+
+# Regla general primero: en .gitattributes gana la ÚLTIMA línea que coincide,
+# así que los binarios van después para que no los pise.
+# Finales de línea normalizados: el contenedor es Linux.
+* text=auto eol=lf
+*.py text eol=lf
+*.md text eol=lf
+
+# Binarios: sin conversión de finales de línea ni diff de texto.
+*.parquet binary
+*.png binary
+*.ico binary

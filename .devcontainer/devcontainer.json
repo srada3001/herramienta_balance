@@ -1,0 +1,54 @@
+{
+  "name": "Herramienta Balance",
+
+  // Reutiliza el Dockerfile del proyecto (etapa "dev"), así no hay que descargar
+  // otra imagen base: las capas de python:3.12-slim y de pip ya están en caché.
+  "build": {
+    "dockerfile": "../Dockerfile",
+    "context": "..",
+    "target": "dev"
+  },
+
+  // El proyecto se monta aquí, que es donde app/core.py espera encontrar
+  // "data/". Editas en el host y el contenedor lo ve al instante.
+  "workspaceFolder": "/app",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/app,type=bind,consistency=cached",
+
+  "forwardPorts": [8000],
+  "portsAttributes": {
+    "8000": {
+      "label": "Optimizador de Balance",
+      "onAutoForward": "notify"
+    }
+  },
+
+  "containerEnv": {
+    "HOST": "0.0.0.0",
+    "PORT": "8000",
+    "PYTHONPATH": "/app"
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.debugpy"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.terminal.activateEnvironment": false,
+        "files.eol": "\n",
+        "[python]": {
+          "editor.insertSpaces": true,
+          "editor.tabSize": 4
+        }
+      }
+    }
+  },
+
+  // Comprueba que las dependencias quedaron disponibles dentro del contenedor.
+  "postCreateCommand": "python -c \"import fastapi, pandas, scipy, pulp; print('Dependencias OK')\"",
+
+  "remoteUser": "root"
+}

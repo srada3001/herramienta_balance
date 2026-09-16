@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# VS Code: launch.json se versiona; el resto es local
+.vscode/*
+!.vscode/launch.json

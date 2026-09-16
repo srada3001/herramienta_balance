@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Optimizador para los equipos de Balance</title>
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar__brand">
+    <img src="/img/Balance.png" alt="Balance" class="logo logo--mark">
+    <div>
+      <h1>Optimizador para los equipos de Balance</h1>
+      <p class="topbar__sub">Herramienta IA para Calderas, Turbogeneradores y Turbogás</p>
+    </div>
+  </div>
+  <div class="topbar__meta">
+    <div class="topbar__logos">
+      <img src="/img/Ecopetrol.png" alt="Ecopetrol" class="logo">
+      <img src="/img/Minciencias.png" alt="Minciencias" class="logo">
+    </div>
+  </div>
+</header>
+
+<main class="layout">
+
+  <!-- ============ PANEL DE ENTRADA ============ -->
+  <section class="panel" aria-labelledby="h-parametros">
+    <div class="panel__head">
+      <h2 id="h-parametros">Parámetros operativos de la planta</h2>
+      <button id="btnLimites" class="btn btn--ghost" type="button">Límites</button>
+    </div>
+
+    <form id="formCalculo" class="panel__body" novalidate>
+
+      <fieldset class="group">
+        <legend>Variables de entrada</legend>
+        <div class="grid grid--2">
+          <label class="field">
+            <span class="field__label">Generación eléctrica</span>
+            <div class="field__input">
+              <input type="number" id="generacion_electrica" name="generacion_electrica" value="50" step="0.1" min="0" required>
+              <span class="unit">MWh</span>
+            </div>
+          </label>
+          <label class="field">
+            <span class="field__label">Vapor industrial</span>
+            <div class="field__input">
+              <input type="number" id="vapor_industrial" name="vapor_industrial" value="450" step="1" min="0" required>
+              <span class="unit">Klb/h</span>
+            </div>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset class="group">
+        <legend>Poderes caloríficos</legend>
+        <div class="grid grid--2">
+          <label class="field">
+            <span class="field__label">Gas natural</span>
+            <div class="field__input">
+              <input type="number" id="poder_gas_natural" name="poder_gas_natural" value="934" step="0.1" min="0" required>
+              <span class="unit">BTU/pce</span>
+            </div>
+          </label>
+          <label class="field">
+            <span class="field__label">Gas combustible</span>
+            <div class="field__input">
+              <input type="number" id="poder_gas_combustible" name="poder_gas_combustible" value="898" step="0.1" min="0" required>
+              <span class="unit">BTU/pce</span>
+            </div>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset class="group">
+        <legend>Generadores <span class="legend-tag" id="tagGeneradores">4 habilitados · máx. 96 MWh</span></legend>
+        <div class="chips" id="chipsGeneradores">
+          <label class="chip"><input type="checkbox" name="turbo1" checked><span>Turbo 1</span></label>
+          <label class="chip"><input type="checkbox" name="turbo2" checked><span>Turbo 2</span></label>
+          <label class="chip"><input type="checkbox" name="turbo3" checked><span>Turbo 3</span></label>
+          <label class="chip"><input type="checkbox" name="turbogas" checked><span>Turbogás</span></label>
+        </div>
+      </fieldset>
+
+      <fieldset class="group">
+        <legend>Calderas <span class="legend-tag" id="tagCalderas">4 habilitadas · máx. 1150 Klb/h</span></legend>
+        <div class="chips" id="chipsCalderas">
+          <label class="chip"><input type="checkbox" name="caldera1" checked><span>Caldera 1</span></label>
+          <label class="chip"><input type="checkbox" name="caldera3" checked><span>Caldera 3</span></label>
+          <label class="chip"><input type="checkbox" name="caldera4" checked><span>Caldera 4</span></label>
+          <label class="chip"><input type="checkbox" name="caldera5" checked><span>Caldera 5</span></label>
+        </div>
+
+        <div class="mezclas">
+          <p class="mezclas__title">Mezcla de combustible <span class="hint">% de gas natural por caldera</span></p>
+          <div class="mezclas__grid">
+            <label class="slider" data-target="mezcla1">
+              <span class="slider__name">Caldera 1</span>
+              <input type="range" name="mezcla1" min="0" max="100" step="1" value="100">
+              <output>100 %</output>
+            </label>
+            <label class="slider" data-target="mezcla3">
+              <span class="slider__name">Caldera 3</span>
+              <input type="range" name="mezcla3" min="0" max="100" step="1" value="100">
+              <output>100 %</output>
+            </label>
+            <label class="slider" data-target="mezcla4">
+              <span class="slider__name">Caldera 4</span>
+              <input type="range" name="mezcla4" min="0" max="100" step="1" value="0">
+              <output>0 %</output>
+            </label>
+            <label class="slider" data-target="mezcla5">
+              <span class="slider__name">Caldera 5</span>
+              <input type="range" name="mezcla5" min="0" max="100" step="1" value="0">
+              <output>0 %</output>
+            </label>
+          </div>
+        </div>
+      </fieldset>
+
+      <button id="btnCalcular" class="btn btn--primary btn--block" type="submit">
+        <span class="btn__text">Calcular</span>
+        <span class="spinner" aria-hidden="true"></span>
+      </button>
+    </form>
+  </section>
+
+  <!-- ============ RESULTADOS ============ -->
+  <section class="results" aria-labelledby="h-resultados">
+    <h2 id="h-resultados" class="results__title">Esquema operativo optimizado</h2>
+
+    <div id="mensajes" class="mensajes" role="status" aria-live="polite"></div>
+
+    <div id="resultados" class="results__body is-empty">
+
+      <div class="empty" id="estadoVacio">
+        <div class="empty__icon">⚙</div>
+        <p>Ajusta los parámetros y pulsa <strong>Calcular</strong> para obtener el esquema operativo.</p>
+      </div>
+
+      <div class="results__content" hidden id="contenido">
+        <div class="board">
+          <h3 class="board__title">Generación eléctrica <span class="board__unit">MWh</span></h3>
+          <div class="cards" id="cardsGeneradores"></div>
+        </div>
+
+        <div class="board">
+          <h3 class="board__title">Producción de vapor <span class="board__unit">Klb/h</span></h3>
+          <div class="cards" id="cardsCalderas"></div>
+        </div>
+
+        <div class="board board--table">
+          <div class="board__head">
+            <h3 class="board__title" id="tituloGuia">Guía de operación para las calderas en servicio</h3>
+            <div class="tabs" role="tablist">
+              <button class="tab is-active" type="button" role="tab" data-tab="calderas" aria-selected="true">Calderas</button>
+              <button class="tab" type="button" role="tab" data-tab="generadores" aria-selected="false">Generadores</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="data" id="tablaGuia">
+              <thead></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ============ MODAL DE LÍMITES ============ -->
+<dialog id="modalLimites" class="modal">
+  <form method="dialog" id="formLimites" class="modal__form">
+    <h2 class="modal__title">Límites operativos de generación eléctrica</h2>
+    <p class="modal__sub">Rango técnico de cada generador, en MWh.</p>
+
+    <div class="limites">
+      <div class="limites__row">
+        <span class="limites__name">Turbo 1</span>
+        <label>Mín <input type="number" name="t1_min" step="0.1" min="0" required></label>
+        <label>Máx <input type="number" name="t1_max" step="0.1" min="0" required></label>
+      </div>
+      <div class="limites__row">
+        <span class="limites__name">Turbo 2</span>
+        <label>Mín <input type="number" name="t2_min" step="0.1" min="0" required></label>
+        <label>Máx <input type="number" name="t2_max" step="0.1" min="0" required></label>
+      </div>
+      <div class="limites__row">
+        <span class="limites__name">Turbo 3</span>
+        <label>Mín <input type="number" name="t3_min" step="0.1" min="0" required></label>
+        <label>Máx <input type="number" name="t3_max" step="0.1" min="0" required></label>
+      </div>
+      <div class="limites__row">
+        <span class="limites__name">Turbogás</span>
+        <label>Mín <input type="number" name="tg_min" step="0.1" min="0" required></label>
+        <label>Máx <input type="number" name="tg_max" step="0.1" min="0" required></label>
+      </div>
+    </div>
+
+    <p class="modal__error" id="errorLimites" hidden></p>
+
+    <div class="modal__actions">
+      <button class="btn btn--ghost" type="button" id="btnCancelarLimites">Cancelar</button>
+      <button class="btn btn--primary" type="button" id="btnGuardarLimites">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toasts" class="toasts" aria-live="polite"></div>
+
+<script src="/js/app.js"></script>
+</body>
+</html>
