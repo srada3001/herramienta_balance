@@ -1,14 +1,3 @@
----
-title: Optimizador de Balance
-emoji: ⚙️
-colorFrom: green
-colorTo: gray
-sdk: docker
-app_port: 8000
-pinned: false
-short_description: Herramienta IA para calderas, turbogeneradores y turbogás
----
-
 # Optimizador para los equipos de Balance — Web App
 
 Versión web (FastAPI) de la *Herramienta IA para Calderas, Turbogeneradores y Turbogás*.
@@ -55,7 +44,7 @@ run.py          Arranque de uvicorn (HOST y PORT por variable de entorno).
 Dockerfile      Imagen del servicio (etapas: dev / produccion).
 .devcontainer/  Entorno de desarrollo remoto para VS Code.
 .vscode/launch.json
-.gitattributes  Reglas de Git LFS para los .parquet (requisito de Hugging Face).
+.gitattributes  Finales de linea LF y marcado binario de .parquet/.png/.ico.
 ```
 
 ## Desarrollo remoto en VS Code
@@ -105,48 +94,35 @@ Notas:
   no trae binario, descomenta en el `Dockerfile` las dos líneas que instalan
   `coinor-cbc`.
 - **Arranque.** El contenedor tarda unos segundos en responder: carga los parquet y
-  ajusta las regresiones. El `HEALTHCHECK` da 90 s de margen.
+  ajusta las regresiones (~1,3 s medidos). El `HEALTHCHECK` da 90 s de margen de sobra.
 - **Etapas.** `docker build` sin `--target` construye `produccion`, que es la última.
   La etapa `dev` sólo trae Python y las dependencias: existe para el devcontainer.
 
-## Despliegue en Hugging Face Spaces
+## Despliegue en Google Cloud Run
 
-La cabecera YAML de arriba es la tarjeta del Space: `sdk: docker` y `app_port: 8000`
-hacen que Hugging Face construya el `Dockerfile` (etapa `produccion`, la última) y
-enrute el trafico al puerto 8000.
-
-Crea el Space con **SDK: Docker**, **plantilla: Blank**, y sube el proyecto:
+`docker build` sin `--target` construye la etapa `produccion`, que es la ultima del
+`Dockerfile`: es la que se despliega. El contenedor lee `PORT` del entorno, que es
+justo como Cloud Run le indica en que puerto escuchar.
 
 ```bash
-git init && git lfs install && git add . && git commit -m "Version inicial"
+gcloud run deploy optimizador-balance --source . --region us-central1 --memory 1Gi --allow-unauthenticated
 ```
-
-```bash
-git remote add space https://huggingface.co/spaces/<usuario>/<nombre-del-space>
-```
-
-```bash
-git push space main
-```
-
-`.gitattributes` ya declara los `.parquet` como LFS: son 125 MB y Hugging Face rechaza
-archivos de mas de 10 MB fuera de LFS.
 
 Lo que conviene saber antes de publicar:
 
+- **Memoria.** La app ocupa ~660 MB al arrancar: los cuatro `.parquet` quedan
+  residentes porque `service.py` los consulta en cada calculo, no solo al ajustar las
+  regresiones. Con menos de 1 Gi el contenedor muere por OOM.
 - **Visibilidad.** La app no tiene autenticacion, y `PUT /api/limites` deja cambiar los
-  limites operativos a cualquier visitante. Los datos son de operacion de planta: crea el
-  Space **privado** salvo que anadas autenticacion primero.
-- **`datos.txt` no persiste.** El sistema de archivos del Space es efimero: al reiniciar,
-  los limites vuelven a los del repositorio. Para conservarlos hace falta Persistent
-  Storage (de pago).
-- **Concurrencia.** El `threading.Lock` serializa los calculos. En el plan gratuito
-  (2 vCPU) varios usuarios simultaneos se encolan; con dos o tres va bien.
-- **Suspension.** Un Space gratuito se duerme tras 48 h sin visitas. Al despertar tarda
-  lo que dure el arranque (un par de segundos mas el arranque del contenedor).
-- **Datos aparte.** Si prefieres no llevar los 125 MB en el repositorio del Space, subelos
-  como Dataset de Hugging Face y descargalos al arrancar con `hf_hub_download`, ajustando
-  `core.DATA_DIR`.
+  limites operativos a cualquier visitante. Los datos son de operacion de planta: quita
+  `--allow-unauthenticated` salvo que anadas autenticacion primero.
+- **`datos.txt` no persiste.** El sistema de archivos de Cloud Run vive en memoria y el
+  servicio escala a cero: al reiniciar, los limites vuelven a los del repositorio.
+  Conservarlos exige almacenamiento externo (GCS o una base de datos).
+- **Concurrencia.** El `threading.Lock` serializa los calculos. Varios usuarios
+  simultaneos se encolan; con dos o tres va bien.
+- **Arranque en frio.** Al escalar a cero, la primera peticion tras un rato de inactividad
+  paga el arranque del contenedor mas los ~1,3 s de carga de datos.
 
 ## API
 
